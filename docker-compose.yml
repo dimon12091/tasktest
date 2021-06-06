@@ -1,0 +1,77 @@
+
+version: '3.8'
+services:
+    jenkins:
+        image: jenkins/jenkins:lts
+        privileged: true
+        user: root
+        ports:
+        - 8080:8080
+        - 50000:50000
+        container_name: jenkins
+        volumes:
+        - ./jenkins:/var/jenkins_home
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /usr/local/bin/docker:/usr/local/bin/docker
+
+
+    gerrit:
+        image: gerritcodereview/gerrit
+        ports:
+        - "29418:29418"
+        - "8081:8080"
+        user: root
+        depends_on:
+        - ldap
+        container_name: gerrit
+        volumes:
+        - /external/gerrit/etc:/var/gerrit/etc
+        - /external/gerrit/git:/var/gerrit/git
+        - /external/gerrit/db:/var/gerrit/db
+        - /external/gerrit/index:/var/gerrit/index
+        - /external/gerrit/cache:/var/gerrit/cache
+        environment:
+        - CANONICAL_WEB_URL=http://localhost:8080
+        # entrypoint: /entrypoint.sh init
+
+    ldap:
+        image: osixia/openldap
+        ports:
+        - "389:389"
+        - "636:636"
+        container_name: ldap
+        environment:
+        - LDAP_ADMIN_PASSWORD=secret
+
+        volumes:
+        - /external/gerrit/ldap/var:/var/lib/ldap
+        - /external/gerrit/ldap/etc:/etc/ldap/slapd.d
+
+    ldap-admin:
+        image: osixia/phpldapadmin
+        container_name: ldap-admin
+        ports:
+        - "6443:443"
+        environment:
+        - PHPLDAPADMIN_LDAP_HOSTS=ldap
+
+
+    nginx:
+        image: nginx:latest
+        container_name: edge-proxy
+        restart: unless-stopped
+        tty: true
+        ports:
+        - "80:80"
+        - "443:443"
+        volumes: 
+        - ./nginx.conf:/etc/nginx/nginx.conf
+        
+
+        
+# networks:
+#     default:
+#         driver: bridge
+#         external: true
+#         name: my-pre-existing-network
+          
