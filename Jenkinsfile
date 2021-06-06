@@ -2,7 +2,7 @@ node{
 
 stage ("scm_checkout") {
 
-git "git@github.com:dimon12091/tasktest.git"
+git "https://github.com/dimon12091/tasktest.git"
 
 }
 
