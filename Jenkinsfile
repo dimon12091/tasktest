@@ -8,4 +8,17 @@ git branch: 'master',
 
 }
 
+stage ("Checkout to different branch") {
+
+sh “git branch -r”
+
+
+}
+
+stage ("package stage") {
+
+sh label: ‘’, script: ‘mvn clean package ‘
+
+}
+
 }
